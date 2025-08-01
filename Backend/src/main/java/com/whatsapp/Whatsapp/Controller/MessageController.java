@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/messages")
-@CrossOrigin("*")
+@CrossOrigin
 public class MessageController {
 
     @Autowired

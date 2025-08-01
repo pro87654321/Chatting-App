@@ -14,14 +14,14 @@ function ChatScreen() {
   const [selectedChat, setSelectedChat] = useState(null);
 
   const handleChatSelect = (chat) => {
-    if (chat) {
-      setSelectedChat(chat);
-      console.log("Selected Chat1:", chat);
-    } else {
-      console.error("Chat is null in handleChatSelect");
-    }
+    setSelectedChat(chat);
+    console.log("Selected Chat1:", chat);
   };
+  console.log("Selected Chat2:", selectedChat);
+;
 
+
+  // Fetch user data on mount
   useEffect(() => {
     const fetchUser = async () => {
       const email = localStorage.getItem("loggedInEmail");
@@ -39,29 +39,36 @@ function ChatScreen() {
     fetchUser();
   }, []);
 
+  // Setup WebSocket connection after user is loaded
   useEffect(() => {
     if (!loggedInUser) return;
 
     connectSocket(
-      (msg) => setMessages((prev) => [...prev, msg]),
+      (msg) => {
+        setMessages((prev) => [...prev, msg]);
+      },
       (typing) => {
         if (typing.receiverId === loggedInUser.id) {
           setTypingStatus(`${typing.senderName} is typing...`);
           setTimeout(() => setTypingStatus(null), 3000);
         }
       },
-      (status) => setOnlineUsers(status.onlineUserIds)
+      (status) => {
+        // Update online user list
+        setOnlineUsers(status.onlineUserIds);
+      }
     );
 
+    // Send login status (optional)
     sendStatus({ userId: loggedInUser.id, status: "ONLINE" });
+
   }, [loggedInUser]);
+  //console.log(messages,typingStatus, loggedInUser, onlineUsers);
 
   const handleProfileUpdate = (updatedUser) => setLoggedInUser(updatedUser);
   const handleOpenProfile = () => setProfileModalOpen(true);
   const handleCloseProfile = () => setProfileModalOpen(false);
-
-  console.log("Selected Chat2:", selectedChat);
-  console.log("Logged in user:", loggedInUser);
+  console.log("Wolwerine  "+selectedChat);
 
   return (
     <div className="flex h-screen w-full font-sans">
@@ -70,22 +77,16 @@ function ChatScreen() {
         onlineUsers={onlineUsers}
         onProfileHeaderClick={handleOpenProfile} 
       />
-
-      {loggedInUser && selectedChat ? (
-        <ChatWindow 
-          messages={messages}
-          setMessages={setMessages}
-          typingStatus={typingStatus}
-          loggedInUser={loggedInUser}
-          sendMessage={sendMessage}
-          sendTyping={sendTyping}
-          selectedChat={selectedChat}
-        />
-      ) : (
-        <div className="flex-1 flex items-center justify-center text-gray-400 text-lg">
-          {loggedInUser ? "Please select a chat to start messaging." : "Loading user..."}
-        </div>
-      )}
+      
+      <ChatWindow 
+        messages={messages}
+        setMessages={setMessages}
+        typingStatus={typingStatus}
+        loggedInUser={loggedInUser}
+        sendMessage={sendMessage}
+        sendTyping={sendTyping}
+        selectedChat={selectedChat}
+      />
 
       {isProfileModalOpen && loggedInUser && (
         <UserProfileModal 
